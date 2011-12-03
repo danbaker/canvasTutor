@@ -1,0 +1,46 @@
+body {
+	font-family: "Helvetica", "Lucida Sans", "Lucida Sans Unicode", "Luxi Sans", Tahoma, sans-serif;
+	background: #efefef;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	position: relative;
+}
+
+/* content ================================================================ */
+#content {
+	margin: 14px 15px 0 232px;
+	position: relative;
+}
+
+/* header ================================================================ */
+#header {
+	height: 44px;
+}
+
+#branding {
+	float: left;
+	width: 210px;
+	padding: 0 7px 0 10px;
+	font-size: 10px;
+	color: #ffffff;
+}
+
+#home {
+	display: block;
+	width: 166px;
+	height: 44px;
+	text-indent: -9999px;
+}
+
+
+/* content ================================================================ */
+#content .window {
+	width: 100%;
+	border: 1px solid #adadad;
+	box-shadow: inset 0 1px 3px #E4E4E4;
+}
+
+canvas {
+ border: 1px solid #ff0000;
+}

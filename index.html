@@ -17,17 +17,25 @@
 <table border=0><tr valign=top><td>
   <div id="panel_js" class="window">
   <textarea id="jseditor" rows=40 cols=40>//ctx = canvas context
-ctx.moveTo(10,10);
-ctx.lineTo(50,10);
-ctx.lineTo(50,50);
+ctx.moveTo(5,5);
+ctx.lineTo(20,5);
+ctx.lineTo(20,30);
 ctx.closePath();
 ctx.fillStyle="#ff8000";
 ctx.fill();
+ctx.beginPath();
+ctx.moveTo(35,5);
+ctx.lineTo(50,5);
+ctx.lineTo(50,30);
+ctx.closePath();
+ctx.strokeStyle="#00ff00";
+ctx.lineWidth = 3;
+ctx.stroke();
   </textarea></div>
 </td><td>
   <div id="column_right">
     <div id="panel_normal" class="window"><canvas id="canvasNormal" width=100 height=100 style="border: 1px solid #ff0000;"></canvas></div>
-    <div id="panel_zoomed" class="window"><canvas id="canvasZoomed" width=500 height=500 style="border: 1px solid #ff0000;"></canvas></div>
+    <div id="panel_zoomed" class="window"><canvas id="canvasZoomed" width=800 height=800 style="border: 1px solid #ff0000;"></canvas></div>
   </div>
 </td></tr></table>
 </div>

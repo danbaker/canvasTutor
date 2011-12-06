@@ -7,6 +7,7 @@ ut.obj = {};
 ut.action.play = function() {
 	var js = jseditor.value;
 	ut.obj.setjs(js);
+	ut.obj.compile();
 	ut.obj.paintAll();
 };
 
@@ -23,6 +24,18 @@ ut.ct.prototype.setjs = function(js) {
 	this.js = js;
 };
 
+ut.ct.prototype.compile = function() {
+	var options = {
+	predef: ["ctx"],
+	white:true
+	};
+	JSLINT(this.js, options);
+	var tre = JSLINT.tree;
+	// @TODO: WORK HERE ... process the tree ... console.log tree back into JavaScript
+	//
+	var danb = 1;
+};
+
 ut.ct.prototype.paintAll = function() {
 	this.paintNormal(this.canNormal);
 	this.paintZoomed(this.canNormal, this.canZoomed);
@@ -35,12 +48,14 @@ ut.ct.prototype.paintNormal = function(idCan) {
 	var width = el.width;
 	var height = el.height;
 	ctx.clearRect(0,0,width,height);
+	ctx.save();
 	try {
 		eval(this.js);
 	} catch (err) {
 		console.log("JavaScript Error");
 		throw(err);
 	}
+	ctx.restore();
 };
 
 ut.ct.prototype.paintZoomed = function(idNorm, idZoom) {

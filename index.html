@@ -19,6 +19,7 @@
 <table border=0><tr valign=top><td>
   <div id="panel_js" class="window">
   <textarea id="jseditor" rows=40 cols=40>//ctx = canvas context
+var i;
 ctx.beginPath();
 ctx.moveTo(5,5);
 ctx.lineTo(20,5);
@@ -26,8 +27,10 @@ ctx.lineTo(20,30);
 ctx.closePath();
 ctx.fillStyle="#ff8000";
 ctx.fill();
+for(i=0; i<3; i++) {
 ctx.beginPath();
-ctx.moveTo(35,5);
+ctx.moveTo(35,i+5-i);
+}
 ctx.lineTo(50,5);
 ctx.lineTo(50,30);
 ctx.closePath();

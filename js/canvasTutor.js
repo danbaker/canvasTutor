@@ -25,7 +25,8 @@ ut.ct.prototype.setjs = function(js) {
 };
 
 ut.ct.prototype.compile = function() {
-	var options = {
+	ut.tp.compile(this.js);
+/*	var options = {
 	predef: ["ctx"],
 	white:true
 	};
@@ -33,7 +34,7 @@ ut.ct.prototype.compile = function() {
 	var tre = JSLINT.tree;
 	// @TODO: WORK HERE ... process the tree ... console.log tree back into JavaScript
 	//
-	var danb = 1;
+	var danb = 1; */
 };
 
 ut.ct.prototype.paintAll = function() {
@@ -109,6 +110,9 @@ ut.ct.prototype.setPixel = function(x,y, pix) {
 
 // -- -- -- -- -- -- -- -- -- -- --
 // create THE object
-ut.obj = new ut.ct("canvasNormal","canvasZoomed");
 // start by pressing Play (in a second)
-setTimeout(function() {ut.action.play();}, 100);
+setTimeout(function() {
+	ut.obj = new ut.ct("canvasNormal","canvasZoomed");
+	ut.tp = new ut.tp();
+	ut.action.play();
+}, 100);

@@ -2,22 +2,25 @@
 // tutorParser constructor
 ut.tp = function() {
 	// the user supplied JavaScript to run
-	this.js = "";
-	// line# last processed
-	this.lineOn = 0;
-	// compiled and re-string-ified JavaScript
-	this.jsCompiled = "";
-	this.depth = 0;
-	this.blockDepth = 0;
+	this.setjs("");
 };
 
 ut.tp.prototype.setjs = function(js) {
 	this.js = js;
+	// line# last processed
 	this.lineOn = 0;
+	// compiled and re-string-ified JavaScript
 	this.jsCompiled = "";
+	// nested depth
 	this.depth = 0;
+	// nested block depth (used for pretty-printing into jsCompiled)
 	this.blockDepth = 0;
+	// kludge: known that an openParen has been added to jsCompiled
 	this.openParen = false;		// true means: this line has an open paren that need to close
+	// processing a ctx.<command>
+	this.processingCtx = 0;				// total ctx commands that are being processed (can find a ctx when still finishing the previous ctx command)
+	this.processingCtxStart = false;	// true means: the next command is a "ctx." command
+	this.processingCtxIndex = -1;		// index into jsCompiled of ctx command (-1 means NO current ctx command)
 };
 
 ut.tp.prototype.compile = function(js) {
@@ -182,6 +185,9 @@ ut.tp.prototype.processPrefix = function(obj) {
 };
 ut.tp.prototype.processInfix = function(obj) {
 //		this.log("processInfix");
+	if (obj.first && obj.first.string === "ctx") {
+		this.startProcessingCtx();
+	}
 	this.processFirst(obj.first);
 	this.processObjectValue(obj);
 	this.processSecond(obj.second);
@@ -218,31 +224,59 @@ ut.tp.prototype.processEdge = function(txt) {
 	this.addjs("", true, true);
 };
 
+ut.tp.prototype.startProcessingCtx = function() {
+	this.processingCtx += 1;
+	this.processingCtxStart = true;
+};
+ut.tp.prototype.endProcessingCtx = function() {
+	this.processingCtx -= 1;
+};
+
 ut.tp.prototype.log = function(txt) {
 	var msg = "";
 	for(var i=0; i<this.depth; i++) msg += ".";
 	console.log(msg + txt);
 };
 
-
+// txt = text to add to the compiled js
+// eol = true means adding an "end of line"
+// isEdge = true means "at an edge. clean up"
 ut.tp.prototype.addjs = function(txt, eol, isEdge) {
+	if (this.jsCompiledEOL) {
+		this.jsCompiledEOL = false;
+		for(var i=0; i<this.blockDepth; i++) {
+			this.jsCompiled += "  ";
+		}
+		if (this.processingCtxStart) {
+			this.processingCtxStart = false;
+//			this.jsCompiled += "// Start CTX\r\n";
+			// save the exact index where this command starts
+			this.processingCtxIndex = this.jsCompiled.length;
+		}
+	}
 	this.jsCompiled += txt;
 	if (eol) {
+		var endCmd;
 		if (this.openParen) {
 			this.openParen = false;
 			this.jsCompiled += ");";
+			endCmd = true;
 		}
 		if (isEdge) {
 			// KLUDGE
 			var c = this.jsCompiled.substring(this.jsCompiled.length-1);
 			if (c != ';' && c != '{') {
 				this.jsCompiled += ';';
+				endCmd = true;
 			}
-//			this.jsCompiled += "//EDGE";
+		}
+		if (endCmd && this.processingCtx > 0 && this.processingCtxIndex >= 0) {
+			this.endProcessingCtx();
+			var ctxCmd = this.jsCompiled.substring(this.processingCtxIndex);
+			this.jsCompiled += "                       // ["+ctxCmd+"]";
+			this.processingCtxIndex = -1;
 		}
 		this.jsCompiled += "\r\n";
-		for(var i=0; i<this.blockDepth; i++) {
-			this.jsCompiled += "  ";
-		}
+		this.jsCompiledEOL = true;
 	}
 };

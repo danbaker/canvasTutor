@@ -21,6 +21,10 @@ ut.tp.prototype.setjs = function(js) {
 	this.processingCtx = 0;				// total ctx commands that are being processed (can find a ctx when still finishing the previous ctx command)
 	this.processingCtxStart = false;	// true means: the next command is a "ctx." command
 	this.processingCtxIndex = -1;		// index into jsCompiled of ctx command (-1 means NO current ctx command)
+	this.processingCtxCommand = "";		// the ctx command processing ("moveTo")
+	this.processingCtxArgs = [];		// array of arguments for command processing
+	this.processingCtxGetOp = false;	// true means: capture the next "operator" (paren,equals)
+	this.processingCtxOp = "";			// last ctx operator
 };
 
 ut.tp.prototype.compile = function(js) {
@@ -59,12 +63,14 @@ ut.tp.prototype.processSecond = function(item) {
 	if (item) {
 //		this.log("processSecond");
 		if (item instanceof Array) {
+			this.processingCtxArgs = [];
 			for(var i=0; i<item.length; i++) {
 				if (i > 0) {
-//					this.log("second: ,");
 					this.addjs(", ");
 				}
+				var idx = this.jsCompiled.length;
 				this.processObject(item[i]);
+				this.processingCtxArgs[i] = this.jsCompiled.substring(idx);
 			}
 		} else {
 			this.processObject(item);
@@ -185,12 +191,21 @@ ut.tp.prototype.processPrefix = function(obj) {
 };
 ut.tp.prototype.processInfix = function(obj) {
 //		this.log("processInfix");
+	var doCtx;
 	if (obj.first && obj.first.string === "ctx") {
 		this.startProcessingCtx();
+		doCtx = true;
 	}
-	this.processFirst(obj.first);
-	this.processObjectValue(obj);
-	this.processSecond(obj.second);
+	this.processFirst(obj.first);		// ctx
+	if (!doCtx && this.processingCtxOpGet && obj.string) {
+		this.processingCtxOpGet = false;
+		this.processingCtxOp = obj.string;
+	}
+	this.processObjectValue(obj);		// .
+	if (doCtx) {
+		this.processingCtxCommand = obj.second.string;
+	}
+	this.processSecond(obj.second);		// moveTo
 };
 ut.tp.prototype.processSuffix = function(obj) {
 //		this.log("processSuffix");
@@ -227,6 +242,7 @@ ut.tp.prototype.processEdge = function(txt) {
 ut.tp.prototype.startProcessingCtx = function() {
 	this.processingCtx += 1;
 	this.processingCtxStart = true;
+	this.processingCtxOpGet = true;			// capture the next "operator" (like paren or equals)
 };
 ut.tp.prototype.endProcessingCtx = function() {
 	this.processingCtx -= 1;
@@ -273,7 +289,11 @@ ut.tp.prototype.addjs = function(txt, eol, isEdge) {
 		if (endCmd && this.processingCtx > 0 && this.processingCtxIndex >= 0) {
 			this.endProcessingCtx();
 			var ctxCmd = this.jsCompiled.substring(this.processingCtxIndex);
-			this.jsCompiled += "                       // ["+ctxCmd+"]";
+			this.jsCompiled += "                       // ["+ctxCmd+"]   cmd="+this.processingCtxCommand+this.processingCtxOp;
+			for(var i=0; i<this.processingCtxArgs.length; i++) {
+				this.jsCompiled += this.processingCtxArgs[i]+",";
+			}
+			// @TODO: append the exact ctx command to jsCompiled (then remove the old one)
 			this.processingCtxIndex = -1;
 		}
 		this.jsCompiled += "\r\n";

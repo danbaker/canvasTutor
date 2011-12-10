@@ -29,6 +29,7 @@ ut.tp.prototype.setjs = function(js) {
 
 ut.tp.prototype.compile = function(js) {
 	this.setjs(js);
+	this.jsCompiled += "ut.tp.prototype.runCtxCmd_init();\r\n";
 	var options = {
 	predef: ["ctx"],
 	white:true
@@ -40,6 +41,9 @@ ut.tp.prototype.compile = function(js) {
 	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
 	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
 	console.log(this.jsCompiled);
+	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
+	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
+	return this.jsCompiled;
 };
 
 ut.tp.prototype.processMain = function(obj) {
@@ -288,15 +292,74 @@ ut.tp.prototype.addjs = function(txt, eol, isEdge) {
 		}
 		if (endCmd && this.processingCtx > 0 && this.processingCtxIndex >= 0) {
 			this.endProcessingCtx();
-			var ctxCmd = this.jsCompiled.substring(this.processingCtxIndex);
-			this.jsCompiled += "                       // ["+ctxCmd+"]   cmd="+this.processingCtxCommand+this.processingCtxOp;
+			var ctxCmd = this.jsCompiled.substring(this.processingCtxIndex);		// "strokeColor=#ff0000;"
+			var tmp;
+			var i;
+			var ctxInfo = {};
+			ctxInfo.cmd = this.processingCtxCommand;			// moveTo
+			ctxInfo.paren = this.processingCtxOp;				// "(" or "="
+			if (ctxInfo.paren === "(") {
+				ctxInfo.args = this.processingCtxArgs;			// [ 20,20 ]
+			} else if (ctxInfo.paren === "=") {
+				tmp = "";
+				i = ctxCmd.indexOf("=");
+				if (i > 0) {
+					tmp = ctxCmd.substring(i+1, ctxCmd.length-1);
+				}
+				ctxInfo.args = ['"'+tmp+'"'];					// ["#fff0000"]
+			}
+			// // // // //
+			var ctxParen = this.processingCtxCommand;								// "("
+			this.jsCompiled += "// ["+ctxCmd+"]   cmd="+this.processingCtxCommand+this.processingCtxOp;
 			for(var i=0; i<this.processingCtxArgs.length; i++) {
 				this.jsCompiled += this.processingCtxArgs[i]+",";
 			}
+//			this.jsCompiled += " ... " + ctxGen;
+			// // // // //
+			// @TODO: Remove ctx command:
+			this.jsCompiled = this.jsCompiled.substring(0, this.processingCtxIndex);
+			var ctxGen = this.generateCtxCommand(ctxInfo);
+			this.jsCompiled += ctxGen;
 			// @TODO: append the exact ctx command to jsCompiled (then remove the old one)
 			this.processingCtxIndex = -1;
 		}
 		this.jsCompiled += "\r\n";
 		this.jsCompiledEOL = true;
+	}
+};
+
+//	ctxInfo.cmd = this.processingCtxCommand;			// moveTo
+//	ctxInfo.paren = this.processingCtxCommand;			// "(" or "="
+//	ctxInfo.args = this.processingCtxArgs;				// [ ]
+ut.tp.prototype.generateCtxCommand = function(ctxInfo) {
+	var i;
+	var cmd = "";
+	cmd += "ctxArgs = [];  ";
+	for(i=0; i<ctxInfo.args.length; i++) {
+		cmd += "ctxArgs["+i+"] = " + ctxInfo.args[i]+';  ';
+	}
+	cmd += "\r\n";
+	cmd += "ut.obj.tp.runCtxCmd(";
+	cmd += "ctx";									// ctx
+	cmd += ', "' + ctxInfo.cmd + '"';				// "moveTo"			"strokeColor"
+	cmd += ', "' + ctxInfo.paren + '"';				// "("				"="
+	cmd += ", ctxArgs";								// ctxArgs			ctxArgs
+	cmd += ");";
+	return cmd;
+};
+
+
+// @TODO: MOVE TO A NEW FILE
+ut.tp.prototype.runCtxCmd_init = function() {
+	console.log("runCtxCmd_init");
+	this.ctxCmdNumber = 0;
+};
+ut.tp.prototype.runCtxCmd = function(ctx, cmd, paren, args) {
+	this.ctxCmdNumber += 1;
+	console.log(""+this.ctxCmdNumber+" runCtxCmd: "+cmd);
+	if (paren === "(") {
+		ctx[cmd](args[0],args[1],args[2],args[3],args[4],args[5]);
+	} else if (paren === "=") {
+		ctx[cmd] = args[0];
 	}
 };

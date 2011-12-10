@@ -25,16 +25,7 @@ ut.ct.prototype.setjs = function(js) {
 };
 
 ut.ct.prototype.compile = function() {
-	ut.tp.compile(this.js);
-/*	var options = {
-	predef: ["ctx"],
-	white:true
-	};
-	JSLINT(this.js, options);
-	var tre = JSLINT.tree;
-	// @TODO: WORK HERE ... process the tree ... console.log tree back into JavaScript
-	//
-	var danb = 1; */
+	this.jsCompiled = ut.obj.tp.compile(this.js);
 };
 
 ut.ct.prototype.paintAll = function() {
@@ -51,7 +42,7 @@ ut.ct.prototype.paintNormal = function(idCan) {
 	ctx.clearRect(0,0,width,height);
 	ctx.save();
 	try {
-		eval(this.js);
+		eval(this.jsCompiled);
 	} catch (err) {
 		console.log("JavaScript Error");
 		throw(err);
@@ -113,6 +104,6 @@ ut.ct.prototype.setPixel = function(x,y, pix) {
 // start by pressing Play (in a second)
 setTimeout(function() {
 	ut.obj = new ut.ct("canvasNormal","canvasZoomed");
-	ut.tp = new ut.tp();
+	ut.obj.tp = new ut.tp();
 	ut.action.play();
 }, 100);

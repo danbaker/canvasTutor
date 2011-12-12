@@ -29,7 +29,7 @@ ut.tp.prototype.setjs = function(js) {
 
 ut.tp.prototype.compile = function(js) {
 	this.setjs(js);
-	this.jsCompiled += "ut.tp.prototype.runCtxCmd_init();\r\n";
+	this.jsCompiled += "ut.obj.ctx.init();\r\n";
 	var options = {
 	predef: ["ctx"],
 	white:true
@@ -177,11 +177,12 @@ ut.tp.prototype.processBlock = function(block) {
 	if (block) {
 		this.depth++;
 		this.blockDepth++;
-//		this.log("BLOCK");
+		//this.log("BLOCK-START");
 		this.addjs(" {");
 		this.processMain(block);
+		this.addjs("", true, true);
+		//this.log("BLOCK-END");
 		this.blockDepth--;
-		this.addjs("", true);
 		this.addjs("}");
 		this.depth--;
 	}
@@ -189,7 +190,7 @@ ut.tp.prototype.processBlock = function(block) {
 
 ut.tp.prototype.processPrefix = function(obj) {
 //		this.log("processPrefix");
-	this.processObjectValue(obj);
+	this.processObjectValue(obj, undefined, true);		// operartor
 	this.processFirst(obj.first);
 	this.processSecond(obj.second);
 };
@@ -205,7 +206,7 @@ ut.tp.prototype.processInfix = function(obj) {
 		this.processingCtxOpGet = false;
 		this.processingCtxOp = obj.string;
 	}
-	this.processObjectValue(obj);		// .
+	this.processObjectValue(obj, undefined, true);		// operator
 	if (doCtx) {
 		this.processingCtxCommand = obj.second.string;
 	}
@@ -215,10 +216,11 @@ ut.tp.prototype.processSuffix = function(obj) {
 //		this.log("processSuffix");
 	this.processFirst(obj.first);
 	this.processSecond(obj.second);
-	this.processObjectValue(obj);
+	this.processObjectValue(obj, undefined, true);		// operator
 };
 
-ut.tp.prototype.processObjectValue = function(obj, type) {
+ut.tp.prototype.processObjectValue = function(obj, type, notQuoted) {
+	var val;
 	if (obj.number === undefined && (obj.string === undefined || obj.string === '(begin)')) {
 		return;
 	}
@@ -229,10 +231,14 @@ ut.tp.prototype.processObjectValue = function(obj, type) {
 	}
 	if(type === "number") {
 		this.addjs(obj.number);
-		this.log("number="+obj.number);
+		//this.log("number="+obj.number);
 	} else if (type === "string") {
-		this.addjs(obj.string);
-		this.log("string="+obj.string);
+		val = obj.string;
+		if (!obj.identifier && !notQuoted) {
+			val = '"' + obj.string + '"';
+		}
+		this.addjs(val);
+		//this.log("string="+val+"  identifier="+obj.identifier+"  notQuoted="+notQuoted);
 		if (obj.string === "(") this.openParen = true;
 	} else {
 		this.log("ERROR: No String or Number");
@@ -298,6 +304,7 @@ ut.tp.prototype.addjs = function(txt, eol, isEdge) {
 			var ctxInfo = {};
 			ctxInfo.cmd = this.processingCtxCommand;			// moveTo
 			ctxInfo.paren = this.processingCtxOp;				// "(" or "="
+			ctxInfo.args = [];
 			if (ctxInfo.paren === "(") {
 				ctxInfo.args = this.processingCtxArgs;			// [ 20,20 ]
 			} else if (ctxInfo.paren === "=") {
@@ -305,22 +312,20 @@ ut.tp.prototype.addjs = function(txt, eol, isEdge) {
 				i = ctxCmd.indexOf("=");
 				if (i > 0) {
 					tmp = ctxCmd.substring(i+1, ctxCmd.length-1);
+					ctxInfo.args = [tmp];							// ["#fff0000"]
 				}
-				ctxInfo.args = ['"'+tmp+'"'];					// ["#fff0000"]
 			}
 			// // // // //
-			var ctxParen = this.processingCtxCommand;								// "("
-			this.jsCompiled += "// ["+ctxCmd+"]   cmd="+this.processingCtxCommand+this.processingCtxOp;
-			for(var i=0; i<this.processingCtxArgs.length; i++) {
-				this.jsCompiled += this.processingCtxArgs[i]+",";
-			}
-//			this.jsCompiled += " ... " + ctxGen;
+//			var ctxParen = this.processingCtxCommand;								// "("
+//			this.jsCompiled += "// ["+ctxCmd+"]   cmd="+this.processingCtxCommand+this.processingCtxOp;
+//			for(var i=0; i<this.processingCtxArgs.length; i++) {
+//				this.jsCompiled += this.processingCtxArgs[i]+",";
+//			}
 			// // // // //
-			// @TODO: Remove ctx command:
+			// Remove ctx command:
 			this.jsCompiled = this.jsCompiled.substring(0, this.processingCtxIndex);
 			var ctxGen = this.generateCtxCommand(ctxInfo);
 			this.jsCompiled += ctxGen;
-			// @TODO: append the exact ctx command to jsCompiled (then remove the old one)
 			this.processingCtxIndex = -1;
 		}
 		this.jsCompiled += "\r\n";
@@ -339,7 +344,10 @@ ut.tp.prototype.generateCtxCommand = function(ctxInfo) {
 		cmd += "ctxArgs["+i+"] = " + ctxInfo.args[i]+';  ';
 	}
 	cmd += "\r\n";
-	cmd += "ut.obj.tp.runCtxCmd(";
+	for(var i=0; i<this.blockDepth; i++) {
+		cmd += "  ";
+	}
+	cmd += "ut.obj.ctx.runCmd(";
 	cmd += "ctx";									// ctx
 	cmd += ', "' + ctxInfo.cmd + '"';				// "moveTo"			"strokeColor"
 	cmd += ', "' + ctxInfo.paren + '"';				// "("				"="
@@ -348,18 +356,3 @@ ut.tp.prototype.generateCtxCommand = function(ctxInfo) {
 	return cmd;
 };
 
-
-// @TODO: MOVE TO A NEW FILE
-ut.tp.prototype.runCtxCmd_init = function() {
-	console.log("runCtxCmd_init");
-	this.ctxCmdNumber = 0;
-};
-ut.tp.prototype.runCtxCmd = function(ctx, cmd, paren, args) {
-	this.ctxCmdNumber += 1;
-	console.log(""+this.ctxCmdNumber+" runCtxCmd: "+cmd);
-	if (paren === "(") {
-		ctx[cmd](args[0],args[1],args[2],args[3],args[4],args[5]);
-	} else if (paren === "=") {
-		ctx[cmd] = args[0];
-	}
-};

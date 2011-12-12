@@ -105,5 +105,6 @@ ut.ct.prototype.setPixel = function(x,y, pix) {
 setTimeout(function() {
 	ut.obj = new ut.ct("canvasNormal","canvasZoomed");
 	ut.obj.tp = new ut.tp();
+	ut.obj.ctx = new ut.ctx();
 	ut.action.play();
 }, 100);

@@ -11,7 +11,16 @@ ut.ctx.prototype.init = function() {
 
 ut.ctx.prototype.runCmd = function(ctx, cmd, paren, args) {
 	this.ctxCmdNumber += 1;
-	console.log(""+this.ctxCmdNumber+" runCmd: "+cmd);
+	{
+		var logMsg = ""+this.ctxCmdNumber+" runCmd: "+cmd + paren;
+		if (args) for(var i=0; i<args.length; i++) {
+			if (i > 0) logMsg += ", ";
+			logMsg += args[i];
+		}
+		if (paren === "(") logMsg += ")";
+		logMsg += ";";
+		console.log(logMsg);
+	}
 	if (paren === "(") {
 		ctx[cmd](args[0],args[1],args[2],args[3],args[4],args[5]);
 	} else if (paren === "=") {

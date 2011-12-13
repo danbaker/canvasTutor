@@ -12,12 +12,14 @@ ut.action.play = function() {
 };
 
 // canvasTutor constructor
-ut.ct = function(idCanvasNormal, idCanvasZoomed) {
+ut.ct = function(idCanvasNormal, idCanvasZoomed, idCanvasZoomedBack, idCanvasZoomedPath) {
 	// the user supplied JavaScript to run
 	this.js = "";
 	
 	this.canNormal = idCanvasNormal;
 	this.canZoomed = idCanvasZoomed;
+	this.canZoomedBack = idCanvasZoomedBack;
+	this.canZoomedPath = idCanvasZoomedPath;
 };
 
 ut.ct.prototype.setjs = function(js) {
@@ -30,6 +32,7 @@ ut.ct.prototype.compile = function() {
 
 ut.ct.prototype.paintAll = function() {
 	this.paintNormal(this.canNormal);
+	this.paintZoomedBack();
 	this.paintZoomed(this.canNormal, this.canZoomed);
 };
 
@@ -48,6 +51,27 @@ ut.ct.prototype.paintNormal = function(idCan) {
 		throw(err);
 	}
 	ctx.restore();
+};
+
+// paint the background of the zoomed canvas
+ut.ct.prototype.paintZoomedBack = function() {
+	var elNorm = document.getElementById(this.canNormal);
+	var wNorm = elNorm.width;
+	var hNorm = elNorm.height;
+	var el = document.getElementById(this.canZoomedBack);
+	var ctx = el.getContext("2d");
+	var width = el.width;
+	var height = el.height;
+	var mult = parseInt(width / wNorm, 10);					// # of pixels in zoomed per "normal pixel"
+	ctx.clearRect(0,0,width,height);
+	ctx.save();
+	for(var x=0; x<wNorm; x++) {
+		for(var y=0; y<hNorm; y++) {
+			ctx.fillStyle = ((x+y)&1)? "#ddd" : "#bbb";
+			ctx.fillRect(x*mult,y*mult, mult,mult);
+		}
+	}
+	ctx.restore();	
 };
 
 ut.ct.prototype.paintZoomed = function(idNorm, idZoom) {
@@ -103,7 +127,7 @@ ut.ct.prototype.setPixel = function(x,y, pix) {
 // create THE object
 // start by pressing Play (in a second)
 setTimeout(function() {
-	ut.obj = new ut.ct("canvasNormal","canvasZoomed");
+	ut.obj = new ut.ct("canvasNormal","canvasZoomed", "canvasZoomedBack", "canvasZoomedPath");
 	ut.obj.tp = new ut.tp();
 	ut.obj.ctx = new ut.ctx();
 	ut.action.play();

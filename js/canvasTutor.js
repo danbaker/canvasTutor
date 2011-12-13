@@ -5,11 +5,10 @@ ut.action = {};
 ut.obj = {};
 
 ut.action.play = function() {
-	var js = jseditor.value;
-	ut.obj.setjs(js);
-	ut.obj.compile();
-	ut.obj.paintAll();
+	ut.obj.doPlay();
 };
+
+
 
 // canvasTutor constructor
 ut.ct = function(idCanvasNormal, idCanvasZoomed, idCanvasZoomedBack, idCanvasZoomedPath) {
@@ -22,35 +21,61 @@ ut.ct = function(idCanvasNormal, idCanvasZoomed, idCanvasZoomedBack, idCanvasZoo
 	this.canZoomedPath = idCanvasZoomedPath;
 };
 
+ut.ct.prototype.doPlay = function() {
+	if (this.playTimer) {
+		clearInterval(this.playTimer);
+		this.playTimer = false;
+	}
+	this.frameLine = 0;
+	var self = this;
+	this.playTimer = setInterval(function(){
+		self.doPlayFrame();
+	}, 200);
+};
+ut.ct.prototype.doPlayFrame = function() {
+	this.frameLine++;
+	var js = jseditor.value;
+	ut.obj.setjs(js);
+	ut.obj.compile();
+	ut.obj.paintAll();
+};
+
+
 ut.ct.prototype.setjs = function(js) {
 	this.js = js;
 };
 
 ut.ct.prototype.compile = function() {
-	this.jsCompiled = ut.obj.tp.compile(this.js);
+	this.jsCompiled = ut.obj.tp.compile(this.js, this.frameLine);
 };
 
 ut.ct.prototype.paintAll = function() {
 	this.paintNormal(this.canNormal);
 	this.paintZoomedBack();
 	this.paintZoomed(this.canNormal, this.canZoomed);
+	this.paintZoomedPath();
 };
 
 // paint onto a known canvas
 ut.ct.prototype.paintNormal = function(idCan) {
-	var el = document.getElementById(idCan);
-	var ctx = el.getContext("2d");
-	var width = el.width;
-	var height = el.height;
-	ctx.clearRect(0,0,width,height);
-	ctx.save();
-	try {
-		eval(this.jsCompiled);
-	} catch (err) {
-		console.log("JavaScript Error");
-		throw(err);
+	if (ut.obj.ctx.setNumber(this.frameLine)) {
+		var el = document.getElementById(idCan);
+		var ctx = el.getContext("2d");
+		var width = el.width;
+		var height = el.height;
+		ctx.clearRect(0,0,width,height);
+		ctx.save();
+		try {
+			eval(this.jsCompiled);
+		} catch (err) {
+			console.log("JavaScript Error");
+			throw(err);
+		}
+		ctx.restore();
+	} else {
+		clearInterval(this.playTimer);
+		this.playTimer = false;
 	}
-	ctx.restore();
 };
 
 // paint the background of the zoomed canvas
@@ -73,6 +98,20 @@ ut.ct.prototype.paintZoomedBack = function() {
 	}
 	ctx.restore();	
 };
+
+ut.ct.prototype.paintZoomedPath = function() {
+	var elNorm = document.getElementById(this.canNormal);
+	var ctxNorm = elNorm.getContext("2d");
+	var wNorm = elNorm.width;
+	var hNorm = elNorm.height;
+	var elZoom = document.getElementById(this.canZoomedPath);
+	var ctxZoom = elZoom.getContext("2d");
+	var wZoom = elZoom.width;
+	var hZoom = elZoom.height;
+	var mult = parseInt(wZoom / wNorm, 10);					// # of pixels in zoomed per "normal pixel"
+	ut.obj.ctx.paintPath(ctxZoom, wZoom, hZoom, mult);
+};
+
 
 ut.ct.prototype.paintZoomed = function(idNorm, idZoom) {
 	var elNorm = document.getElementById(idNorm);

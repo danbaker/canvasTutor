@@ -25,6 +25,7 @@ ut.tp.prototype.setjs = function(js) {
 	this.processingCtxArgs = [];		// array of arguments for command processing
 	this.processingCtxGetOp = false;	// true means: capture the next "operator" (paren,equals)
 	this.processingCtxOp = "";			// last ctx operator
+	this.processingCtxLine = 0;			// line# of ctx command processing
 };
 
 ut.tp.prototype.compile = function(js) {
@@ -209,6 +210,7 @@ ut.tp.prototype.processInfix = function(obj) {
 	this.processObjectValue(obj, undefined, true);		// operator
 	if (doCtx) {
 		this.processingCtxCommand = obj.second.string;
+		this.processingCtxLine = obj.line;
 	}
 	this.processSecond(obj.second);		// moveTo
 };
@@ -302,6 +304,7 @@ ut.tp.prototype.addjs = function(txt, eol, isEdge) {
 			var tmp;
 			var i;
 			var ctxInfo = {};
+			ctxInfo.line = this.processingCtxLine;				// line#
 			ctxInfo.cmd = this.processingCtxCommand;			// moveTo
 			ctxInfo.paren = this.processingCtxOp;				// "(" or "="
 			ctxInfo.args = [];
@@ -336,6 +339,7 @@ ut.tp.prototype.addjs = function(txt, eol, isEdge) {
 //	ctxInfo.cmd = this.processingCtxCommand;			// moveTo
 //	ctxInfo.paren = this.processingCtxCommand;			// "(" or "="
 //	ctxInfo.args = this.processingCtxArgs;				// [ ]
+//	ctxInfo.line = line#
 ut.tp.prototype.generateCtxCommand = function(ctxInfo) {
 	var i;
 	var cmd = "";
@@ -352,6 +356,7 @@ ut.tp.prototype.generateCtxCommand = function(ctxInfo) {
 	cmd += ', "' + ctxInfo.cmd + '"';				// "moveTo"			"strokeColor"
 	cmd += ', "' + ctxInfo.paren + '"';				// "("				"="
 	cmd += ", ctxArgs";								// ctxArgs			ctxArgs
+	cmd += ", " + ctxInfo.line;						// 5				5
 	cmd += ");";
 	return cmd;
 };

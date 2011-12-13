@@ -9,10 +9,10 @@ ut.ctx.prototype.init = function() {
 };
 
 
-ut.ctx.prototype.runCmd = function(ctx, cmd, paren, args) {
+ut.ctx.prototype.runCmd = function(ctx, cmd, paren, args,line) {
 	this.ctxCmdNumber += 1;
 	{
-		var logMsg = ""+this.ctxCmdNumber+" runCmd: "+cmd + paren;
+		var logMsg = ""+this.ctxCmdNumber+"  Line#"+line+"  runCmd: "+cmd + paren;
 		if (args) for(var i=0; i<args.length; i++) {
 			if (i > 0) logMsg += ", ";
 			logMsg += args[i];

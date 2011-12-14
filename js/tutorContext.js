@@ -3,6 +3,7 @@
 ut.ctx = function() {
 };
 
+// set the line# 
 ut.ctx.prototype.setNumber = function(n) {
 	this.number = n;
 	if (n > this.ctxCmdLines) {
@@ -13,9 +14,12 @@ ut.ctx.prototype.setNumber = function(n) {
 
 ut.ctx.prototype.init = function() {
 	console.log("init");
+	// which command is being run
 	this.ctxCmdNumber = 0;
+	// which 
 	this.ctxCmdLines = 1;
 	this.path = {};
+	this.doCmd("beginPath", []);
 };
 
 
@@ -43,12 +47,35 @@ ut.ctx.prototype.runCmd = function(ctx, cmd, paren, args,line) {
 };
 
 ut.ctx.prototype.doCmd = function(cmd, args) {
+	var pnt;
 	switch(cmd) {
+	case "beginPath":
+		this.path.points = [];
+		this.path.x = this.path.y = null;
+		this.path.begin = {};
+		this.path.begin.x = this.path.begin.y = null;
+		break;
 	case "moveTo":
 		this.savePathXY(args[0],args[1]);
+		pnt = {cmd:"moveTo", x:args[0], y:args[1]};
+		this.path.points.push(pnt);
 		break;
 	case "lineTo":
+		if (this.path.points.length > 0 && this.path.begin.x === null) {
+			pnt = this.path.points[this.path.points.length-1];
+			this.path.begin.x = pnt.x;
+			this.path.begin.y = pnt.y;
+		}
 		this.savePathXY(args[0],args[1]);
+		pnt = {cmd:"lineTo", x:args[0], y:args[1]};
+		this.path.points.push(pnt);
+		break;
+	case "closePath":
+		if (this.path.points.length > 0) {
+			this.savePathXY(this.path.points[0].x, this.path.points[0].y);
+			pnt = {cmd:"lineTo", x:this.path.begin.x, y:this.path.begin.y};
+			this.path.points.push(pnt);
+		}
 		break;
 	}
 };
@@ -67,16 +94,36 @@ ut.ctx.prototype.savePathXY = function(x,y) {
 ut.ctx.prototype.paintPath = function(ctx, wide, high, mult) {
 	ctx.save();
 	ctx.clearRect(0,0,wide,high);
-	
-//	ctx.translate(0.5,0.5);
-	ctx.fillStyle = "rgba(0,0,255,0.9)";
-	ctx.beginPath();
-	ctx.moveTo(this.path.x*mult,0);
-	ctx.lineTo(this.path.x*mult,high);
-	ctx.moveTo(0,this.path.y*mult);
-	ctx.lineTo(wide,this.path.y*mult);
-	ctx.strokeStyle = "rgba(0,0,255,0.4)";
-	ctx.lineWidth = 2;
-	ctx.stroke();
+	if (this.path.x != null) {
+		ctx.fillStyle = "rgba(0,0,255,0.4)";
+		ctx.strokeStyle = "rgba(0,0,255,0.4)";
+		this.paintPathPoints(ctx, wide, high, mult);
+		ctx.beginPath();
+		ctx.moveTo(this.path.x*mult,0);
+		ctx.lineTo(this.path.x*mult,high);
+		ctx.moveTo(0,this.path.y*mult);
+		ctx.lineTo(wide,this.path.y*mult);
+		ctx.lineWidth = 2;
+		ctx.stroke();
+	}
 	ctx.restore();
 };
+
+ut.ctx.prototype.paintPathPoints = function(ctx, wide, high, mult) {
+	ctx.beginPath();
+	var pnt;
+	for(var i=0; i<this.path.points.length; i++) {
+		pnt = this.path.points[i];
+		switch (pnt.cmd) {
+		case "moveTo":
+			ctx.moveTo(pnt.x*mult, pnt.y*mult);
+			break;
+		case "lineTo":
+			ctx.lineTo(pnt.x*mult, pnt.y*mult);
+			break;
+		}
+	}
+	ctx.lineWidth = 1;
+	ctx.stroke();
+};
+

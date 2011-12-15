@@ -7,6 +7,9 @@ ut.obj = {};
 ut.action.play = function() {
 	ut.obj.doPlay();
 };
+ut.action.example = function(txt) {
+	console.log("Example: "+txt);
+};
 
 
 

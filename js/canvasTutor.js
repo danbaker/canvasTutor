@@ -8,7 +8,13 @@ ut.action.play = function() {
 	ut.obj.doPlay();
 };
 ut.action.example = function(txt) {
-	console.log("Example: "+txt);
+	var js = ut.example.set(txt);
+	if (js) {
+		var el = document.getElementById("jseditor");
+		el.value = js;
+		ut.obj.clearAll();
+		ut.obj.stopPlayTimer();
+	}
 };
 
 
@@ -24,11 +30,15 @@ ut.ct = function(idCanvasNormal, idCanvasZoomed, idCanvasZoomedBack, idCanvasZoo
 	this.canZoomedPath = idCanvasZoomedPath;
 };
 
-ut.ct.prototype.doPlay = function() {
+ut.ct.prototype.stopPlayTimer = function() {
 	if (this.playTimer) {
 		clearInterval(this.playTimer);
 		this.playTimer = false;
 	}
+};
+
+ut.ct.prototype.doPlay = function() {
+	this.stopPlayTimer();
 	this.frameLine = 0;
 	var self = this;
 	this.playTimer = setInterval(function(){
@@ -50,6 +60,17 @@ ut.ct.prototype.setjs = function(js) {
 
 ut.ct.prototype.compile = function() {
 	this.jsCompiled = ut.obj.tp.compile(this.js, this.frameLine);
+};
+
+ut.ct.prototype.clearAll = function() {
+	var els = [this.canNormal, this.canZoomed, this.canZoomedPath];
+	for(var i=0; i<els.length; i++) {
+		var el = document.getElementById(els[i]);
+		var ctx = el.getContext("2d");
+		var width = el.width;
+		var height = el.height;
+		ctx.clearRect(0,0,width,height);
+	}
 };
 
 ut.ct.prototype.paintAll = function() {

@@ -6,7 +6,7 @@ ut.tp = function() {
 };
 
 ut.tp.prototype.setjs = function(js) {
-	this.js = js;
+	this.js = "var JUNKjunkJunk;"+js;
 	// line# last processed
 	this.lineOn = 0;
 	// compiled and re-string-ified JavaScript

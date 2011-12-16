@@ -8,10 +8,14 @@ ut.action.play = function() {
 	ut.obj.doPlay();
 };
 ut.action.example = function(txt) {
-	var js = ut.example.set(txt);
-	if (js) {
+	var obj = ut.example.set(txt);
+	if (obj) {
 		var el = document.getElementById("jseditor");
-		el.value = js;
+		el.value = obj.js;
+		if (obj.w && obj.m) {
+			// @TODO: set the normal canvas size to "obj.w by obj.w" and the zoom canvas size to obj.w * obj.m
+			ut.obj.setCanvasSize(obj.w, obj.m);
+		}
 		ut.obj.clearAll();
 		ut.obj.stopPlayTimer();
 	}
@@ -25,9 +29,25 @@ ut.ct = function(idCanvasNormal, idCanvasZoomed, idCanvasZoomedBack, idCanvasZoo
 	this.js = "";
 	
 	this.canNormal = idCanvasNormal;
+	this.canNormalBack = "canvasNormalBack";
 	this.canZoomed = idCanvasZoomed;
 	this.canZoomedBack = idCanvasZoomedBack;
 	this.canZoomedPath = idCanvasZoomedPath;
+};
+
+// set the normal canvas size to "obj.w by obj.w" and the zoom canvas size to obj.w * obj.m
+ut.ct.prototype.setCanvasSize = function(width, mult) {
+	var els = [this.canNormal, this.canNormalBack, this.canZoomed, this.canZoomedBack, this.canZoomedPath];
+	for(var i=0; i<els.length; i++) {
+		var el = document.getElementById(els[i]);
+		var w = (i<=1? width : width * mult);
+		el.width = w;
+		el.height = w;
+	}
+	var el = document.getElementById("panel_normal");
+	el.style.height = width + "px";
+	
+	this.paintZoomedBack();
 };
 
 ut.ct.prototype.stopPlayTimer = function() {
@@ -89,6 +109,7 @@ ut.ct.prototype.paintNormal = function(idCan) {
 		var height = el.height;
 		ctx.clearRect(0,0,width,height);
 		ctx.save();
+		ctx.beginPath();
 		try {
 			eval(this.jsCompiled);
 		} catch (err) {

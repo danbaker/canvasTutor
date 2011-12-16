@@ -39,7 +39,8 @@ ut.example.set.lines2 = function() {
 	'ctx.strokeStyle="red";\r\n' +
 	'ctx.lineWidth=1;\r\n' +
 	'ctx.stroke();\r\n' +
-	'// notice the line is 2 pixels tall and semi-transparent' +
+	'// notice the line is 2 pixels tall and semi-transparent\r\n' +
+	'\r\n' +
 	'ctx.beginPath();\r\n' +
 	'ctx.moveTo(5,10.5);\r\n' +
 	'ctx.lineTo(10,10.5);\r\n' +

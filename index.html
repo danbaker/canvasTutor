@@ -8,13 +8,15 @@
   <title>Learn about html5 canvas</title>
   <link rel="stylesheet" type="text/css" href="css/normalize.css">
   <link rel="stylesheet" type="text/css" href="css/layout.css">
+  <link rel="stylesheet" type="text/css" href="css/buttons.css">
 </head>
 <body>
 <div id="header">
   <div id="branding"></div>
   <div id="actions">
-  <button onclick="ut.action.play();">Play</button>
-  <button>Step</button>
+  <button id="actionStepBack"    class = "playButton" onclick="ut.action.step(-1);"></button>
+  <button id="actionPlay"        class = "playButton" onclick="ut.action.play();"></button>
+  <button id="actionStepForward" class = "playButton" onclick="ut.action.step(1);"></button>
   Speed:__</div>
 </div>
 <div id="content">

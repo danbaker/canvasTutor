@@ -1,0 +1,51 @@
+body {
+	font-family: "Helvetica", "Lucida Sans", "Lucida Sans Unicode", "Luxi Sans", Tahoma, sans-serif;
+	background: #efefef;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	position: relative;
+}
+
+.playButton {
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background-size: 40px 40px;
+  background: transparent no-repeat center center;
+}
+
+#actionPlay {
+  background-image: url(../image/play1.png);
+}
+#actionPlay:hover {
+  background-image: url(../image/play2.png);
+}
+#actionPlay:active {
+  background-image: url(../image/play1.png);
+}
+
+
+#actionStepBack {
+  background-image: url(../image/play1.png);
+}
+#actionStepBack:hover {
+  background-image: url(../image/play2.png);
+}
+#actionStepBack:active {
+  background-image: url(../image/play1.png);
+}
+
+
+#actionStepForward {
+  background-image: url(../image/play1.png);
+}
+#actionStepForward:hover {
+  background-image: url(../image/play2.png);
+}
+#actionStepForward:active {
+  background-image: url(../image/play1.png);
+}

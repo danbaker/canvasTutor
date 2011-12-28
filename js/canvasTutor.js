@@ -7,6 +7,9 @@ ut.obj = {};
 ut.action.play = function() {
 	ut.obj.doPlay();
 };
+ut.action.step = function(dir) {
+	ut.obj.doStep(dir);
+};
 ut.action.example = function(txt) {
 	var obj = ut.example.set(txt);
 	if (obj) {
@@ -17,7 +20,7 @@ ut.action.example = function(txt) {
 			ut.obj.setCanvasSize(obj.w, obj.m);
 		}
 		ut.obj.clearAll();
-		ut.obj.stopPlayTimer();
+		ut.obj.stopPlayTimer(true);
 	}
 };
 
@@ -33,6 +36,8 @@ ut.ct = function(idCanvasNormal, idCanvasZoomed, idCanvasZoomedBack, idCanvasZoo
 	this.canZoomed = idCanvasZoomed;
 	this.canZoomedBack = idCanvasZoomedBack;
 	this.canZoomedPath = idCanvasZoomedPath;
+	
+	this.stopPlayTimer(true);
 };
 
 // set the normal canvas size to "obj.w by obj.w" and the zoom canvas size to obj.w * obj.m
@@ -50,28 +55,43 @@ ut.ct.prototype.setCanvasSize = function(width, mult) {
 	this.paintZoomedBack();
 };
 
-ut.ct.prototype.stopPlayTimer = function() {
+ut.ct.prototype.stopPlayTimer = function(resetPlay) {
 	if (this.playTimer) {
 		clearInterval(this.playTimer);
 		this.playTimer = false;
+	}
+	if (resetPlay) {
+		this.frameAtEnd = true;
+		this.frameLine = 0;
 	}
 };
 
 ut.ct.prototype.doPlay = function() {
 	this.stopPlayTimer();
-	this.frameLine = 0;
+	if (this.frameAtEnd) {
+		this.frameLine = 0;
+	}
 	var self = this;
 	this.playTimer = setInterval(function(){
-		self.doPlayFrame();
+		self.doPlayFrame(1);
 	}, 200);
 };
-ut.ct.prototype.doPlayFrame = function() {
-	this.frameLine++;
+ut.ct.prototype.doPlayFrame = function(dir) {
+	if (dir < 0 && this.frameLine <= 0) {
+		// at beginning
+		return;
+	}
+	this.frameLine += dir;
 	var js = jseditor.value;
 	ut.obj.setjs(js);
 	ut.obj.compile();
 	ut.obj.paintAll();
 };
+ut.ct.prototype.doStep = function(dir) {
+	this.stopPlayTimer();
+	this.doPlayFrame(dir);
+};
+
 
 
 ut.ct.prototype.setjs = function(js) {
@@ -117,9 +137,11 @@ ut.ct.prototype.paintNormal = function(idCan) {
 			throw(err);
 		}
 		ctx.restore();
+		this.frameAtEnd = false;
 	} else {
-		clearInterval(this.playTimer);
-		this.playTimer = false;
+		this.frameAtEnd = true;
+		this.frameLine--;
+		this.stopPlayTimer();
 	}
 };
 

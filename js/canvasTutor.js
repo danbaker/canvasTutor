@@ -10,6 +10,12 @@ ut.action.play = function() {
 ut.action.step = function(dir) {
 	ut.obj.doStep(dir);
 };
+ut.action.begin = function() {
+	ut.obj.doBegin();
+};
+ut.action.end = function() {
+	ut.obj.doEnd();
+};
 ut.action.example = function(txt) {
 	var obj = ut.example.set(txt);
 	if (obj) {
@@ -66,6 +72,19 @@ ut.ct.prototype.stopPlayTimer = function(resetPlay) {
 	}
 };
 
+ut.ct.prototype.doBegin = function() {
+	this.stopPlayTimer(true);
+	this.doPlayFrame(0);
+};
+ut.ct.prototype.doEnd = function() {
+	this.stopPlayTimer(true);
+	// force to LAST POSSIBLE LINE#
+	 while (ut.obj.ctx.setNumber(this.frameLine)) {
+	 	this.frameLine++;
+	 }
+	this.frameLine--;
+	this.doPlayFrame(0);
+};
 ut.ct.prototype.doPlay = function() {
 	this.stopPlayTimer();
 	if (this.frameAtEnd) {

@@ -49,3 +49,24 @@ body {
 #actionStepForward:active {
   background-image: url(../image/step1.png);
 }
+
+
+#actionBegin {
+  background-image: url(../image/begin1.png);
+}
+#actionBegin:hover {
+  background-image: url(../image/begin2.png);
+}
+#actionBegin:active {
+  background-image: url(../image/begin1.png);
+}
+
+#actionEnd {
+  background-image: url(../image/end1.png);
+}
+#actionEnd:hover {
+  background-image: url(../image/end2.png);
+}
+#actionEnd:active {
+  background-image: url(../image/end1.png);
+}

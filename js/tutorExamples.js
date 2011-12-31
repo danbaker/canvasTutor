@@ -51,3 +51,20 @@ ut.example.set.lines2 = function() {
 	''};
 };
 
+ut.example.set.arc1 = function() {
+	return {w:50, m:10, js:'' +
+	'var PI = Math.PI;\r\n' +
+
+	'ctx.beginPath();\r\n' +
+	'ctx.moveTo(20,10);\r\n' +
+	'ctx.arc(20,30,15,3*PI/2,0,false);\r\n' +
+	'ctx.lineTo(40,30);\r\n' +
+
+	'ctx.lineWidth = 2;\r\n' +
+	'ctx.strokeStyle = "#ff0000";\r\n' +
+	'ctx.stroke();\r\n' +
+	''};
+
+
+};
+

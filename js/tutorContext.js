@@ -13,7 +13,6 @@ ut.ctx.prototype.setNumber = function(n) {
 };
 
 ut.ctx.prototype.init = function() {
-	console.log("init");
 	// which command is being run
 	this.ctxCmdNumber = 0;
 	// which 
@@ -27,6 +26,8 @@ ut.ctx.prototype.runCmd = function(ctx, cmd, paren, args,line) {
 	this.ctxCmdNumber += 1;
 	this.ctxCmdLines += 1;
 	if (this.ctxCmdNumber <= this.number) {
+		this.ctxLineNumberPrev = this.ctxLineNumber;
+		this.ctxLineNumberNext = null;
 		this.ctxLineNumber = line;		// save the last line# processed
 		{
 			var logMsg = ""+this.ctxCmdNumber+"  Line#"+line+"  runCmd: "+cmd + paren;
@@ -39,11 +40,16 @@ ut.ctx.prototype.runCmd = function(ctx, cmd, paren, args,line) {
 			console.log(logMsg);
 		}
 		if (paren === "(") {
+			// record the command
 			this.doCmd(cmd, args);
+			// actually perform the command on the canvas
 			ctx[cmd](args[0],args[1],args[2],args[3],args[4],args[5]);
 		} else if (paren === "=") {
+			// change canvas attribute
 			ctx[cmd] = args[0];
 		}
+	} else if (this.ctxLineNumberNext === null) {
+		this.ctxLineNumberNext = line;
 	}
 };
 
@@ -78,9 +84,15 @@ ut.ctx.prototype.doCmd = function(cmd, args) {
 			this.path.points.push(pnt);
 		}
 		break;
+	case "arc":
+		pnt = {cmd:"arc", x:args[0], y:args[1], radius:args[2], startAngle:args[3], endAngle:args[4], anitclockwise:args[5]};
+		this.path.points.push(pnt);
+		// @TODO: calc ending point and call savePathXY(newX,newY)
+		break;
 	}
 };
 
+// save the current path cursor point
 ut.ctx.prototype.savePathXY = function(x,y) {
 	this.path.x = x;
 	this.path.y = y;
@@ -121,6 +133,10 @@ ut.ctx.prototype.paintPathPoints = function(ctx, wide, high, mult) {
 			break;
 		case "lineTo":
 			ctx.lineTo(pnt.x*mult, pnt.y*mult);
+			break;
+		case "arc":
+		console.log("ARC");
+			ctx.arc(pnt.x*mult, pnt.y*mult, pnt.radius*mult, pnt.startAngle, pnt.endAngle, pnt.anticlockwise);
 			break;
 		}
 	}

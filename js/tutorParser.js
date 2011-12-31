@@ -39,11 +39,11 @@ ut.tp.prototype.compile = function(js) {
 	var tre = JSLINT.tree;
 	this.processObject(tre);
 	this.addjs("", true, true);
-	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
-	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
-	console.log(this.jsCompiled);
-	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
-	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
+//	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
+//	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
+//	console.log(this.jsCompiled);
+//	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
+//	console.log("- - - - - - - - - - - - - - - - - - - - - - - -");
 	return this.jsCompiled;
 };
 
@@ -92,7 +92,7 @@ ut.tp.prototype.processObject = function(obj) {
 	} else if (obj.line > this.lineOn) {
 //		this.addjs("", true);
 		this.lineOn = obj.line;
-		this.log("------ line "+ obj.line + "------");
+//		this.log("------ line "+ obj.line + "------");
 	}
 	switch (obj.arity) {
 	case undefined:

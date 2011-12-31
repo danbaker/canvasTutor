@@ -98,9 +98,9 @@ ut.ct.prototype.doPlay = function() {
 ut.ct.prototype.doPlayFrame = function(dir) {
 	if (dir < 0 && this.frameLine <= 0) {
 		// at beginning
-		return;
+	} else {
+		this.frameLine += dir;
 	}
-	this.frameLine += dir;
 	var js = jseditor.value;
 	ut.obj.setjs(js);
 	ut.obj.compile();
@@ -123,7 +123,7 @@ ut.ct.prototype.compile = function() {
 };
 
 ut.ct.prototype.highlightLine = function() {
-	var n = ut.obj.ctx.ctxLineNumber;
+	var n = ut.obj.ctx.ctxLineNumberNext;
 	var el = document.getElementById("jseditor");
 	var js = el.value;
 	var idx1 = this.findLine(js, n);
@@ -173,6 +173,9 @@ ut.ct.prototype.paintAll = function() {
 
 // paint onto a known canvas
 ut.ct.prototype.paintNormal = function(idCan) {
+	ut.obj.ctx.ctxLineNumberPrev = -1;
+	ut.obj.ctx.ctxLineNumber = 0;
+	ut.obj.ctx.ctxLineNumberNext = 1;
 	if (ut.obj.ctx.setNumber(this.frameLine)) {
 		var el = document.getElementById(idCan);
 		var ctx = el.getContext("2d");

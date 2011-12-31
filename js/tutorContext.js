@@ -27,6 +27,7 @@ ut.ctx.prototype.runCmd = function(ctx, cmd, paren, args,line) {
 	this.ctxCmdNumber += 1;
 	this.ctxCmdLines += 1;
 	if (this.ctxCmdNumber <= this.number) {
+		this.ctxLineNumber = line;		// save the last line# processed
 		{
 			var logMsg = ""+this.ctxCmdNumber+"  Line#"+line+"  runCmd: "+cmd + paren;
 			if (args) for(var i=0; i<args.length; i++) {

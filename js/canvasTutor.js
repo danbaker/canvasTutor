@@ -105,6 +105,7 @@ ut.ct.prototype.doPlayFrame = function(dir) {
 	ut.obj.setjs(js);
 	ut.obj.compile();
 	ut.obj.paintAll();
+	this.highlightLine();
 };
 ut.ct.prototype.doStep = function(dir) {
 	this.stopPlayTimer();
@@ -119,6 +120,37 @@ ut.ct.prototype.setjs = function(js) {
 
 ut.ct.prototype.compile = function() {
 	this.jsCompiled = ut.obj.tp.compile(this.js, this.frameLine);
+};
+
+ut.ct.prototype.highlightLine = function() {
+	var n = ut.obj.ctx.ctxLineNumber;
+	var el = document.getElementById("jseditor");
+	var js = el.value;
+	var idx1 = this.findLine(js, n);
+	var idx2 = this.findLine(js, n+1);
+	el.setSelectionRange(idx1, idx2);
+};
+
+ut.ct.prototype.findLine = function(txt, n) {
+	var i;
+	var ch;
+	// scan to the "Nth" line
+	for(i=0; i<txt.length && n>1; i++) {
+		// check if at an EOL
+		ch = txt.charAt(i);
+		if (ch == '\r') {
+			// <CR>
+			if (txt.charAt(i+1) === '\n') {
+				// <CR><LF>
+				i++;
+			}
+			n--;
+		} else if (ch == '\n') {
+			// <LF>
+			n--;
+		}
+	}
+	return i;
 };
 
 ut.ct.prototype.clearAll = function() {
